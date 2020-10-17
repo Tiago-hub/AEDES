@@ -1,4 +1,6 @@
 from classes import *
+from pprint import pprint
+from datetime import datetime
 import csv
 tarefa = []
 idTarefa = 1
@@ -11,10 +13,13 @@ def adicionar ():
     materia = str(input())
     print('Qual o titulo do trabalho?')
     titulo = str(input())
-    print('Qual a pontuação do trabalho?')
+    print('Qual a pontuação do trabalho? Insira um valor entre 0 e 99 no formato xx')
     pontuacao = int(input())
-    print('Qual a data de entrega?')
-    dataEntrega = str(input())
+    print('Qual a data de entrega? Informe dd/mm/yyyy.')
+    datetime_in_string = str(input())
+    datetime_format = "%d/%m/%Y"
+    dataEntrega = datetime.timestamp(datetime.strptime(datetime_in_string, datetime_format))
+    quick_sort(tarefa, 0, len(tarefa) - 1, lambda x, y: x.id > y.id)
     tarefa.append(tarefas(int(tarefa[-1].getId())+1,titulo,materia,pontuacao,dataEntrega))
     print('Tarefa Cadastrada com sucesso')
 
@@ -24,14 +29,43 @@ def listar ():
     if (not(len(tarefa))):
         print('sem tarefas cadastradas')
     else:
-        for umatarefa in tarefa:
-            string = 'Id: '+str(umatarefa.getId())+' | Titulo: '+str(umatarefa.getTitulo())+' | Materia: '+str(umatarefa.getMateria())+' | Pontuação: '+str(umatarefa.getPontuacao())+' | Data de Entrega: '+str(umatarefa.getDataEntrega())
-            print(string)
-
+        print('')
+        print('Deseja ordenar por id, data ou pontos?')
+        resposta = str(input())
+        if(resposta=='id'):
+            quick_sort(tarefa, 0, len(tarefa) - 1, lambda x, y: x.id > y.id)
+            print('')
+            print('Lista de trabalhos (ordenada por id)')
+            print('--------------------------------------------------------------------------------------------------------')
+            for umatarefa in tarefa:
+                
+                string = 'Id: '+str(umatarefa.getId())+' | Titulo: '+str(umatarefa.getTitulo())+' | Materia: '+str(umatarefa.getMateria())+' | Pontuação: '+str(umatarefa.getPontuacao())+' | Data de Entrega: '+str(datetime.fromtimestamp((umatarefa.getDataEntrega())).strftime('%d/%m/%Y'))
+                print(string)
+        elif(resposta=='data'):
+            quick_sort(tarefa, 0, len(tarefa) - 1, lambda x, y: x.dataEntrega > y.dataEntrega)
+            print('')
+            print('Lista de trabalhos (ordenada por data de entrega)')
+            print('--------------------------------------------------------------------------------------------------------')
+            for umatarefa in tarefa:
+                
+                string = 'Id: '+str(umatarefa.getId())+' | Titulo: '+str(umatarefa.getTitulo())+' | Materia: '+str(umatarefa.getMateria())+' | Pontuação: '+str(umatarefa.getPontuacao())+' | Data de Entrega: '+str(datetime.fromtimestamp((umatarefa.getDataEntrega())).strftime('%d/%m/%Y'))
+                print(string)
+        elif(resposta=='pontos'):
+            quick_sort(tarefa, 0, len(tarefa) - 1, lambda x, y: x.pontuacao > y.pontuacao)
+            print('')
+            print('Lista de trabalhos (ordenada por pontuação)')
+            print('--------------------------------------------------------------------------------------------------------')
+            for umatarefa in tarefa:
+                
+                string = 'Id: '+str(umatarefa.getId())+' | Titulo: '+str(umatarefa.getTitulo())+' | Materia: '+str(umatarefa.getMateria())+' | Pontuação: '+str(umatarefa.getPontuacao())+' | Data de Entrega: '+str(datetime.fromtimestamp((umatarefa.getDataEntrega())).strftime('%d/%m/%Y'))
+                print(string)
+        else:
+            print('opção inválida')
 def excluir ():
     global tarefa
     print('Digite a id da tarefa que deseja deletar')
     idTarefa = int(input()) - 1 
+    quick_sort(tarefa, 0, len(tarefa) - 1, lambda x, y: x.id > y.id)
     del(tarefa[idTarefa])
 
 def carregar():
@@ -41,9 +75,15 @@ def carregar():
         line_count = 0
         for row in csv_reader:
             if (not(len(tarefa))):
-                tarefa.append(tarefas(row[0],row[1],row[2],row[3],row[4]))
+                datetime_in_string = row[4]
+                datetime_format = "%d/%m/%Y"
+                dataEntrega = datetime.timestamp(datetime.strptime(datetime_in_string, datetime_format))
+                tarefa.append(tarefas(int(row[0]),row[1],row[2],int(row[3]),dataEntrega))
             else:
-                tarefa.append(tarefas(int(tarefa[-1].getId())+1,row[1],row[2],row[3],row[4]))
+                datetime_in_string = row[4]
+                datetime_format = "%d/%m/%Y"
+                dataEntrega = datetime.timestamp(datetime.strptime(datetime_in_string, datetime_format))
+                tarefa.append(tarefas(int(tarefa[-1].getId())+1,row[1],row[2],int(row[3]),dataEntrega))
             line_count += 1
         print(f'Processed {line_count} lines.')
 
@@ -53,6 +93,35 @@ def salvar():
 
         for umatarefa in tarefa:
             data_writer.writerow([str(umatarefa.getId()), str(umatarefa.getTitulo()), str(umatarefa.getMateria()),str(umatarefa.getPontuacao()),str(umatarefa.getDataEntrega())])
+
+def partition(array, start, end, compare_func):
+    pivot = array[start]
+    low = start + 1
+    high = end
+
+    while True:
+        while low <= high and compare_func(array[high], pivot):
+            high = high - 1
+
+        while low <= high and not compare_func(array[low], pivot):
+            low = low + 1
+
+        if low <= high:
+            array[low], array[high] = array[high], array[low]
+        else:
+            break
+
+    array[start], array[high] = array[high], array[start]
+
+    return high
+
+def quick_sort(array, start, end, compare_func):
+    if start >= end:
+        return
+
+    p = partition(array, start, end, compare_func)
+    quick_sort(array, start, p-1, compare_func)
+    quick_sort(array, p+1, end, compare_func)
 
 carregar()  
 while (1):
