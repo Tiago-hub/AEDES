@@ -14,11 +14,25 @@ def adicionar ():
     print('Qual o titulo do trabalho?')
     titulo = str(input())
     print('Qual a pontuação do trabalho? Insira um valor entre 0 e 99 no formato xx')
-    pontuacao = int(input())
-    print('Qual a data de entrega? Informe dd/mm/yyyy.')
-    datetime_in_string = str(input())
+    while True:
+        try:
+            pontuacao = int(input())
+            break
+        except ValueError:
+            print("Apenas numeros inteiros...")  
+            continue
+    print('Qual a data de entrega?')
     datetime_format = "%d/%m/%Y"
-    dataEntrega = datetime.timestamp(datetime.strptime(datetime_in_string, datetime_format))
+    while True:
+        try:
+            dataInput=datetime.strptime(str(input()), datetime_format)
+            break
+        except ValueError:
+            print("Data inválida. Insira data na forma dd/mm/aaaa")  
+            continue
+    
+    
+    dataEntrega = datetime.timestamp(dataInput)
     quick_sort(tarefa, 0, len(tarefa) - 1, lambda x, y: x.id > y.id)
     tarefa.append(tarefas(int(tarefa[-1].getId())+1,titulo,materia,pontuacao,dataEntrega))
     print('Tarefa Cadastrada com sucesso')
